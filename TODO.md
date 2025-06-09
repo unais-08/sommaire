@@ -27,13 +27,13 @@
 
 ##### Auth & User Management
 
-- [ ] Integrate `Clerk` for authentication
-- [ ] Protect dashboard routes
+- [x] Integrate `Clerk` for authentication
+- [x] Protect dashboard routes
 
 ##### UI & Component Structure
 
-- [ ] Set up layout with `ShadCN` components
-- [ ] Implement sidebar and responsive navbar
+- [x] Set up layout with `ShadCN` components
+- [x] Implement sidebar and responsive navbar
 - [ ] Add motion effects using `Framer Motion`
 
 ##### Backend & DB
@@ -67,8 +67,8 @@
 
 #### 🚀 Deployment Checklist
 
-- [ ] Add environment variables
-- [ ] Check `.env` and `.gitignore` setup
+- [x] Add environment variables
+- [x] Check `.env` and `.gitignore` setup
 - [ ] Deploy on Vercel
 
 ---
