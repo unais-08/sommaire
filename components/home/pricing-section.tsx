@@ -123,7 +123,7 @@ function PricingCard({
  */
 export default function PricingSection() {
   return (
-    <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 ">
       <div className="max-w-6xl mx-auto text-center mb-12 lg:mb-16">
         <h2 className="text-rose-600 text-xl font-bold uppercase tracking-wider mb-2">
           Pricing

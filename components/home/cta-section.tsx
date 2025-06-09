@@ -8,7 +8,7 @@ import { ArrowRight } from "lucide-react"; // Assuming ArrowRight icon from luci
  */
 export default function CallToActionSection() {
   return (
-    <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
           Ready to Save Hours of Reading Time?
