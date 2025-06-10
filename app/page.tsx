@@ -5,8 +5,6 @@ import PricingSection from "@/components/home/pricing-section";
 import CallToActionSection from "@/components/home/cta-section";
 import BgGradient from "@/components/common/bg-gradient";
 
-
-
 export default function Home() {
   return (
     <div className="relative w-full">
