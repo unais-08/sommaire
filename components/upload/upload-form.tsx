@@ -1,37 +1,65 @@
 "use client";
 import React from "react";
-import { z } from "zod";
 import UploadFormInput from "@/components/upload/upload-form-input";
-import { fi } from "zod/v4/locales";
-
-const schema = z.object({
-  file: z
-    .instanceof(File, {
-      message: "Invalid File or File not provided",
-    })
-    .refine((file) => file.size <= 20 * 1024 * 1024, {
-      message: "File size must be less than 20MB",
-    })
-    .refine((file) => file.type.startsWith("application/pdf"), {
-      message: "File must be a PDF",
-    }),
-});
+import { schema } from "@/utils/fileSchema";
+import { useUploadThing } from "@/utils/uploadthing";
+import { toast } from "sonner";
 
 export default function UploadForm() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const { startUpload, routeConfig } = useUploadThing("pdfRouter", {
+    onClientUploadComplete: () => {
+      console.log("File: uploaded successfully");
+      toast.success("File uploaded successfully");
+    },
+    onUploadError: (error) => {
+      // 'error' here is an UploadThingError object
+      console.error("Upload failed:", error); // Still log the whole error object
+
+      // Access specific properties of the UploadThingError
+      let errorMessage = error.message; // General message like "Request failed..."
+
+      // If there's additional data from the server (e.g., specific error details)
+      if (error.data) {
+        console.error("Server error data:", error.data);
+        // You might get 'cause' or other custom properties from your backend
+        if (
+          typeof error.data === "object" &&
+          error.data !== null &&
+          "cause" in error.data
+        ) {
+          errorMessage = `${error.message} - Cause: ${error.data.cause}`;
+        } else if (
+          typeof error.data === "object" &&
+          error.data !== null &&
+          "uploadthingError" in error.data
+        ) {
+          errorMessage = `${error.message} - UT Code: ${error.data.uploadthingError}`;
+        }
+        // You can also stringify the data if it's complex JSON for display
+        // errorMessage += ` (Details: ${JSON.stringify(error.data)})`;
+      }
+
+      toast.error(`Upload failed: ${errorMessage}`);
+    },
+    onUploadBegin: (fileName: string) => {
+      console.log("Uploading...", fileName);
+      toast.info(`Uploading ${fileName}...`);
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form submitted");
-
 
     // Handle form submission logic here
     const formData = new FormData(e.currentTarget);
     const file = formData.get("file") as File;
-    
+
     const validatedFile = schema.safeParse({ file });
-    
+
     // Uncomment the line below to see the validated file in the console
     // console.log("Validated file:", validatedFile);
-    
+
     // If the file is not valid, donot proceed with the upload and processing
     if (!validatedFile.success) {
       console.error(
@@ -41,6 +69,12 @@ export default function UploadForm() {
       return;
     }
 
+    const resp = await startUpload([file]);
+    if (!resp || resp.length === 0) {
+      console.error("Upload failed or no response received");
+      return;
+    }
+    console.log("Upload response:", resp);
     /*
      * validate the file type and size here
      *schame with zod
