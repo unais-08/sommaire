@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-// import Link from 'next/link'; // Removed 'next/link' as it's not resolved in this environment
+import Link from "next/link";
 
 /**
  * NotFoundPage component
@@ -22,13 +22,13 @@ const NotFoundPage = () => {
           Oops! The page you're looking for doesn't exist. It might have been
           moved or deleted.
         </p>
-        {/* Replaced Next.js Link with a standard <a> tag for broader compatibility */}
-        <a
+        {/* Use Next.js Link component */}
+        <Link
           href="/"
           className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-rose-600 hover:bg-rose-700 transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500"
         >
           Go back home
-        </a>
+        </Link>
       </div>
 
       {/* Basic animation for the 404 text */}
