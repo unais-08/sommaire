@@ -4,6 +4,7 @@ import UploadFormInput from "@/components/upload/upload-form-input";
 import { schema } from "@/utils/fileSchema";
 import { useUploadThing } from "@/utils/uploadthing";
 import { toast } from "sonner";
+import { generatePDFSummary } from "@/actions/upload-action";
 
 export default function UploadForm() {
   const { startUpload, routeConfig } = useUploadThing("pdfRouter", {
@@ -74,7 +75,13 @@ export default function UploadForm() {
       console.error("Upload failed or no response received");
       return;
     }
-    console.log("Upload response:", resp);
+    // console.log("Upload response:", resp);
+    console.log("Server data:", resp[0].serverData);
+    //parse the pdf using langchain
+    const summary = await generatePDFSummary({
+      serverData: resp[0].serverData,
+    });
+    console.log("Summary generated:", summary);
     /*
      * validate the file type and size here
      *schame with zod
