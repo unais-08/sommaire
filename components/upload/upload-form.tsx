@@ -1,101 +1,113 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 import UploadFormInput from "@/components/upload/upload-form-input";
+import { generatePDFSummary } from "@/actions/upload-action";
 import { schema } from "@/utils/fileSchema";
 import { useUploadThing } from "@/utils/uploadthing";
-import { toast } from "sonner";
-import { generatePDFSummary } from "@/actions/upload-action";
 
 export default function UploadForm() {
-  const { startUpload, routeConfig } = useUploadThing("pdfRouter", {
+  const [isLoading, setIsLoading] = useState(false); // State to manage loading status
+
+  const { startUpload } = useUploadThing("pdfRouter", {
     onClientUploadComplete: () => {
-      console.log("File: uploaded successfully");
-      toast.success("File uploaded successfully");
+      console.log("File uploaded successfully");
+      // This toast can confirm the raw upload success
+      toast.success("✅ File uploaded successfully!");
     },
     onUploadError: (error) => {
-      // 'error' here is an UploadThingError object
-      console.error("Upload failed:", error); // Still log the whole error object
-
-      // Access specific properties of the UploadThingError
-      let errorMessage = error.message; // General message like "Request failed..."
-
-      // If there's additional data from the server (e.g., specific error details)
-      if (error.data) {
-        console.error("Server error data:", error.data);
-        // You might get 'cause' or other custom properties from your backend
-        if (
-          typeof error.data === "object" &&
-          error.data !== null &&
-          "cause" in error.data
-        ) {
-          errorMessage = `${error.message} - Cause: ${error.data.cause}`;
-        } else if (
-          typeof error.data === "object" &&
-          error.data !== null &&
-          "uploadthingError" in error.data
-        ) {
-          errorMessage = `${error.message} - UT Code: ${error.data.uploadthingError}`;
-        }
-        // You can also stringify the data if it's complex JSON for display
-        // errorMessage += ` (Details: ${JSON.stringify(error.data)})`;
+      console.error("Upload failed:", error);
+      let errorMessage = "An unexpected error occurred during upload.";
+      if (error.message) {
+        errorMessage = error.message;
       }
-
-      toast.error(`Upload failed: ${errorMessage}`);
+      if (error.data && typeof error.data === "object" && error.data !== null) {
+        if ("cause" in error.data) {
+          errorMessage = `Upload failed: ${error.data.cause}`;
+        } else if ("uploadthingError" in error.data) {
+          errorMessage = `Upload failed: ${error.data.uploadthingError}`;
+        }
+      }
+      // This toast specifically for upload errors
+      toast.error(`❌ ${errorMessage}`);
+      setIsLoading(false); // Ensure loading state is reset on upload error
     },
     onUploadBegin: (fileName: string) => {
       console.log("Uploading...", fileName);
-      toast.info(`Uploading ${fileName}...`);
+      // This toast shows progress during the actual file transfer
+      toast.info(`📤 Uploading "${fileName}"...`);
     },
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted");
+    toast.dismiss(); // Clear any previous toasts
+    setIsLoading(true); // Set loading state to true
 
-    // Handle form submission logic here
-    const formData = new FormData(e.currentTarget);
-    const file = formData.get("file") as File;
+    try {
+      toast.info("⏳ Processing your request. Please wait...");
 
-    const validatedFile = schema.safeParse({ file });
+      const formData = new FormData(e.currentTarget);
+      const file = formData.get("file") as File;
 
-    // Uncomment the line below to see the validated file in the console
-    // console.log("Validated file:", validatedFile);
+      const validatedFile = schema.safeParse({ file });
 
-    // If the file is not valid, donot proceed with the upload and processing
-    if (!validatedFile.success) {
-      console.error(
-        "Validation failed:",
-        validatedFile.error.flatten().fieldErrors.file?.[0]
+      if (!validatedFile.success) {
+        const fileError = validatedFile.error.flatten().fieldErrors.file?.[0];
+        console.error("File validation failed:", fileError);
+        toast.error(
+          `⚠️ File validation failed: ${
+            fileError || "Please select a valid PDF file."
+          }`
+        );
+        return; // Exit if validation fails
+      }
+
+      // Start the actual file upload
+      const uploadResponse = await startUpload([file]);
+
+      if (!uploadResponse || uploadResponse.length === 0) {
+        console.error(
+          "Upload failed or no response received from UploadThing."
+        );
+        toast.error("❌ File upload failed. Please try again.");
+        return; // Exit if upload fails
+      }
+
+      // After successful upload, update the toast message for summary generation
+      toast.info("✨ PDF uploaded! Now generating summary...");
+      console.log("Server data:", uploadResponse[0].serverData);
+
+      // Generate the PDF summary
+      const summaryResult = await generatePDFSummary({
+        serverData: uploadResponse[0].serverData,
+      });
+
+      // Based on the summary generation result, show success or failure toast
+      if (summaryResult.success) {
+        console.log("Summary generated:", summaryResult.data);
+        toast.success("📝 PDF summary generated successfully!");
+        // Here you might redirect or display the summary
+      } else {
+        console.error("Summary generation failed:", summaryResult.message);
+        toast.error(`🚨 Summary generation failed: ${summaryResult.message}`);
+      }
+    } catch (error: any) {
+      // Catch any unexpected errors during the entire process
+      console.error("An unexpected error occurred during handleSubmit:", error);
+      toast.error(
+        `💥 An unexpected error occurred: ${
+          error.message || "Please try again."
+        }`
       );
-      return;
+    } finally {
+      setIsLoading(false); // Always reset loading state
     }
-
-    const resp = await startUpload([file]);
-    if (!resp || resp.length === 0) {
-      console.error("Upload failed or no response received");
-      return;
-    }
-    // console.log("Upload response:", resp);
-    console.log("Server data:", resp[0].serverData);
-    //parse the pdf using langchain
-    const summary = await generatePDFSummary({
-      serverData: resp[0].serverData,
-    });
-    console.log("Summary generated:", summary);
-    /*
-     * validate the file type and size here
-     *schame with zod
-     * upload the file with upladthing
-     * parse the pdf using langchain
-     * summarize the pdf using AI
-     * save the summary to the database
-     * redirect to the [id] summary page
-     */
   };
 
   return (
-    <div className="flex flex-col  gap-8 w-full max-w-2xl max-auto">
-      <UploadFormInput onSubmit={handleSubmit} />
+    <div className="flex flex-col gap-8 w-full max-w-2xl mx-auto">
+      <UploadFormInput onSubmit={handleSubmit} isLoading={isLoading} />
     </div>
   );
 }

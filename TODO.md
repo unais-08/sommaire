@@ -45,7 +45,7 @@
 
 #### 🧠 AI Integrations
 
-- [ ] Add LangChain basic setup
+- [x] Add LangChain basic setup
 - [ ] Integrate OpenAI for content summarization
 - [ ] Test Gemini integration with fallback mechanism
 
@@ -60,7 +60,7 @@
 
 #### ☁️ Uploads
 
-- [ ] Setup `uploadthing` for file uploads
+- [x] Setup `uploadthing` for file uploads
 - [ ] Add drag and drop UI
 
 ---
