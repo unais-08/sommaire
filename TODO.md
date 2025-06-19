@@ -1,5 +1,7 @@
 ### ✅ TODO.md – Sommaire AI Project
 
+## todo -> revalidatePath for deleteSQL query
+
 **Tech Stack**: `Next.js`, `React 19`, `PostgreSQL`, `LangChain`, `ShadCN`, `uploadthing`, `OpenAI`, `Google Gemini`, `Clerk`, `Stripe`, `Framer Motion`
 
 ---
@@ -49,10 +51,6 @@
 
 ---
 
-
-
-
-
 #### 🧠 Database POSTGRESQL
 
 - [ ] Setup DB
@@ -60,6 +58,7 @@
 - [ ] Setup ORM
 
 ---
+
 ##### Backend & DB
 
 - [ ] Set up PostgreSQL with Prisma
