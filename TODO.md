@@ -36,20 +36,34 @@
 - [x] Implement sidebar and responsive navbar
 - [ ] Add motion effects using `Framer Motion`
 
-##### Backend & DB
+#### ☁️ Uploads
 
-- [ ] Set up PostgreSQL with Prisma
-- [ ] Define user & document schema
-
----
+- [x] Setup `uploadthing` for file uploads
+- [ ] Add drag and drop UI
 
 #### 🧠 AI Integrations
 
 - [x] Add LangChain basic setup
-- [ ] Integrate OpenAI for content summarization
-- [ ] Test Gemini integration with fallback mechanism
+- [x] Integrate OpenAI for content summarization
+- [x] Test Gemini integration with fallback mechanism
 
 ---
+
+
+
+
+
+#### 🧠 Database POSTGRESQL
+
+- [ ] Setup DB
+- [ ] Make Schema
+- [ ] Setup ORM
+
+---
+##### Backend & DB
+
+- [ ] Set up PostgreSQL with Prisma
+- [ ] Define user & document schema
 
 #### 🛒 Payments
 
@@ -57,11 +71,6 @@
 - [ ] Add usage metering (summarization requests count)
 
 ---
-
-#### ☁️ Uploads
-
-- [x] Setup `uploadthing` for file uploads
-- [ ] Add drag and drop UI
 
 ---
 
