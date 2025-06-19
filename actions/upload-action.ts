@@ -1,9 +1,10 @@
 "use server";
 
+import { getDBConnection } from "@/lib/db";
 import { generateSummaryFromGemini } from "@/lib/geminiai";
 import { fetchAndExtractText } from "@/lib/langchain";
 import { generateSummaryFromOpenAI } from "@/lib/openai";
-
+import { auth } from "@clerk/nextjs/server";
 /**
  * Generates a summary from a PDF file.
  * It first extracts text using Langchain, then attempts to summarize with Gemini.
@@ -12,6 +13,15 @@ import { generateSummaryFromOpenAI } from "@/lib/openai";
  * @param uploadResponse - An object containing server data about the uploaded file.
  * @returns An object indicating success or failure, with a message and the summary data.
  */
+
+interface PdfSummaryType {
+  userId?: string;
+  fileUrl: string;
+  summary: string;
+  title: string;
+  fileName: string;
+}
+
 export async function generatePDFSummary(uploadResponse: {
   serverData: {
     userId: string;
@@ -116,6 +126,95 @@ export async function generatePDFSummary(uploadResponse: {
       success: false,
       message: `An unexpected error occurred during PDF summarization: ${
         err.message || "Please check server logs for more details."
+      }`,
+      data: null,
+    };
+  }
+}
+
+export async function savePDFSummary({
+  userId,
+  fileUrl,
+  summary,
+  title,
+  fileName,
+}: PdfSummaryType) {
+  //sql query to save the PDF summary
+  //this is a placeholder function, implement your database logic here
+  try {
+    const sql = await getDBConnection();
+    await sql`INSERT INTO pdf_summaries (
+    user_id,
+    original_file_url,
+    summary_text,
+    title,
+    file_name
+) VALUES (
+    ${userId},
+    ${fileUrl},
+    ${summary},
+    ${title},
+    ${fileName}
+  );`;
+    return {
+      userId,
+      fileUrl,
+      summary,
+      title,
+      fileName,
+    } as PdfSummaryType; // Return the saved summary object
+  } catch (error) {
+    console.error("Error saving PDF summary:", error);
+    throw error;
+  }
+}
+
+export async function storePDFSummaryAction({
+  fileUrl,
+  summary,
+  title,
+  fileName,
+}: PdfSummaryType) {
+  //user is must logged in to store a PDF summary
+  //save the pdf
+  let savedSummary: PdfSummaryType | null = null;
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return {
+        success: false,
+        message:
+          "User is not authenticated. Please log in to store a PDF summary.",
+        data: null,
+      };
+    }
+    savedSummary = await savePDFSummary({
+      userId,
+      fileUrl,
+      summary,
+      title,
+      fileName,
+    });
+    if (!savedSummary) {
+      return {
+        success: false,
+        message: "Failed to save the PDF summary. Please try again later.",
+        data: null,
+      };
+    }
+    // Optionally, you can return a success message here if needed
+    return {
+      success: true,
+      message: "PDF summary stored successfully.",
+      data: savedSummary,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `An error occurred while storing the PDF summary: ${
+        error instanceof Error
+          ? error.message
+          : "Please check server logs for more details."
       }`,
       data: null,
     };

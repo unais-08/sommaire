@@ -2,9 +2,13 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import UploadFormInput from "@/components/upload/upload-form-input";
-import { generatePDFSummary } from "@/actions/upload-action";
+import {
+  generatePDFSummary,
+  storePDFSummaryAction,
+} from "@/actions/upload-action";
 import { schema } from "@/utils/fileSchema";
 import { useUploadThing } from "@/utils/uploadthing";
+import { formatFileNameAsTitle } from "@/utils/format-file";
 
 export default function UploadForm() {
   const [isLoading, setIsLoading] = useState(false); // State to manage loading status
@@ -91,6 +95,24 @@ export default function UploadForm() {
       } else {
         console.error("Summary generation failed:", summaryResult.message);
         toast.error(`🚨 Summary generation failed: ${summaryResult.message}`);
+      }
+
+      const formattedFileName = formatFileNameAsTitle(
+        uploadResponse[0].serverData.file.name
+      );
+      if (summaryResult.data) {
+        let storedResult: any;
+        storedResult = await storePDFSummaryAction({
+          summary: summaryResult.data,
+          title: formattedFileName,
+          fileName: uploadResponse[0].serverData.file.name,
+          fileUrl: uploadResponse[0].serverData.file.url,
+        });
+
+        //save the summary to the database
+        toast.success(
+          `✅ Summary saved successfully! Title: "${storedResult?.title || formattedFileName}"`
+        );
       }
     } catch (error: any) {
       // Catch any unexpected errors during the entire process
