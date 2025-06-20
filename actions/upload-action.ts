@@ -15,6 +15,7 @@ import { auth } from "@clerk/nextjs/server";
  */
 
 interface PdfSummaryType {
+  summaryId?: string; // Optional ID for the summary, if needed
   userId?: string;
   fileUrl: string;
   summary: string;
@@ -143,26 +144,31 @@ export async function savePDFSummary({
   //this is a placeholder function, implement your database logic here
   try {
     const sql = await getDBConnection();
-    await sql`INSERT INTO pdf_summaries (
+const result = await sql`
+  INSERT INTO pdf_summaries (
     user_id,
     original_file_url,
     summary_text,
     title,
     file_name
-) VALUES (
+  ) VALUES (
     ${userId},
     ${fileUrl},
     ${summary},
     ${title},
     ${fileName}
-  );`;
-    return {
-      userId,
-      fileUrl,
-      summary,
-      title,
-      fileName,
-    } as PdfSummaryType; // Return the saved summary object
+  )
+  RETURNING id;
+`;
+const summaryId = result[0]?.id;
+return {
+  summaryId,
+  userId,
+  fileUrl,
+  summary,
+  title,
+  fileName,
+} as PdfSummaryType; // Return the saved summary object
   } catch (error) {
     console.error("Error saving PDF summary:", error);
     throw error;
