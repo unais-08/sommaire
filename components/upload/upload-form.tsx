@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { redirect } from "next/navigation";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import {
   generatePDFSummary,
@@ -95,6 +96,7 @@ export default function UploadForm() {
       } else {
         console.error("Summary generation failed:", summaryResult.message);
         toast.error(`🚨 Summary generation failed: ${summaryResult.message}`);
+        return; // Exit if summary generation fails
       }
 
       const formattedFileName = formatFileNameAsTitle(
@@ -111,8 +113,13 @@ export default function UploadForm() {
 
         //save the summary to the database
         toast.success(
-          `✅ Summary saved successfully! Title: "${storedResult?.title || formattedFileName}"`
+          `✅ Summary saved successfully! Title: "${
+            storedResult?.title || formattedFileName
+          }"`
         );
+        console.log("Stored result:", storedResult);
+        console.log(storedResult?.data?.summaryId);
+        redirect(`/summaries/${storedResult?.data?.summaryId})`);
       }
     } catch (error: any) {
       // Catch any unexpected errors during the entire process
