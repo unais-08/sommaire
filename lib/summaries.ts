@@ -1,5 +1,5 @@
-import { SummaryType } from "@/app/(logged-in)/dashboard/page";
 import { getDBConnection } from "@/lib/db";
+import { SummaryType } from "@/types/summary";
 
 export async function getSummaries(userId: string): Promise<SummaryType[]> {
   const sql = await getDBConnection();
