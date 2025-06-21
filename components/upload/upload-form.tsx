@@ -16,7 +16,7 @@ export default function UploadForm() {
   const router = useRouter();
   const { startUpload } = useUploadThing("pdfRouter", {
     onClientUploadComplete: () => {
-      console.log("File uploaded successfully");
+      // console.log("File uploaded successfully");
       // This toast can confirm the raw upload success
       toast.success("✅ File uploaded successfully!");
     },
@@ -38,7 +38,7 @@ export default function UploadForm() {
       setIsLoading(false); // Ensure loading state is reset on upload error
     },
     onUploadBegin: (fileName: string) => {
-      console.log("Uploading...", fileName);
+      // console.log("Uploading...", fileName);
       // This toast shows progress during the actual file transfer
       toast.info(`📤 Uploading "${fileName}"...`);
     },
@@ -81,7 +81,7 @@ export default function UploadForm() {
 
       // After successful upload, update the toast message for summary generation
       toast.info("✨ PDF uploaded! Now generating summary...");
-      console.log("Server data:", uploadResponse[0].serverData);
+      // console.log("Server data:", uploadResponse[0].serverData);
 
       // Generate the PDF summary
       const summaryResult = await generatePDFSummary({
@@ -90,7 +90,7 @@ export default function UploadForm() {
 
       // Based on the summary generation result, show success or failure toast
       if (summaryResult.success) {
-        console.log("Summary generated:", summaryResult.data);
+        // console.log("Summary generated:", summaryResult.data);
         toast.success("📝 PDF summary generated successfully!");
         // Here you might redirect or display the summary
       } else {

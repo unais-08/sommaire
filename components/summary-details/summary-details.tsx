@@ -1,12 +1,10 @@
-import React from "react";
-
 import { SummaryHeader } from "@/components/summary-details/summary-header";
 import { SummaryContentCard } from "@/components/summary-details/summary-reel";
 import { SummaryTitleSection } from "@/components/summary-details/summary-title";
 import { SummaryActions } from "@/components/summary-details/summary-action";
+import { SummaryDetailPageProps } from "@/types/summary";
 
-// --- Main Page Component ---
-export default function SummaryDetailPage() {
+export default function SummaryDetailPage({ summary }: SummaryDetailPageProps) {
   // Mock data for demonstration
   const summaryData = {
     title: "Next.js Hot Tips Cheatsheet",
@@ -20,15 +18,29 @@ export default function SummaryDetailPage() {
       ],
     },
   };
+  console.log(summary);
+  const {
+    id,
+    user_id,
+    file_name,
+    title,
+    summary_text,
+    original_file_url,
+    status,
+    created_at,
+    updated_at,
+  } = summary;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8 lg:p-10">
       <div className="max-w-4xl mx-auto py-8">
-        <SummaryHeader />
-        <SummaryTitleSection title={summaryData.title} />
+        <SummaryHeader created_at={created_at} />
+        <SummaryTitleSection title={title} />
         <SummaryActions
-          sourceLink={summaryData.sourceLink}
+          file_name={file_name}
+          sourceLink={original_file_url}
           wordsCount={summaryData.wordsCount}
+          summary_text={summary_text}
         />
         <SummaryContentCard
           title={summaryData.cardContent.title}

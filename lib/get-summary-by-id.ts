@@ -1,7 +1,9 @@
-import { getDBConnection } from "./db";
+import { getDBConnection } from "@/lib/db";
+import { GetSummaryByIdResult } from "@/types/summary";
 
-export default async function getSummaryById(summaryId: string) {
-  // Validate the summary ID.
+export default async function getSummaryById(
+  summaryId: string
+): Promise<GetSummaryByIdResult> {
   if (!summaryId) {
     return {
       success: false,
@@ -12,9 +14,31 @@ export default async function getSummaryById(summaryId: string) {
 
   try {
     const sql = await getDBConnection();
-    // Step 1: Prepare the SQL query to fetch the summary by ID.
-    const [summary] = `SELECT * FROM pdf_summaries WHERE id = ${summaryId}`;
-    return summary;
+    const [summary] =
+      await sql`SELECT * FROM pdf_summaries WHERE id = ${summaryId}`;
+
+    if (!summary) {
+      return {
+        success: false,
+        message: "Summary not found.",
+        data: null,
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        id: summary.id,
+        user_id: summary.user_id,
+        file_name: summary.file_name,
+        title: summary.title,
+        summary_text: summary.summary_text,
+        original_file_url: summary.original_file_url,
+        status: summary.status,
+        created_at: summary.created_at,
+        updated_at: summary.updated_at,
+      },
+    };
   } catch (error) {
     console.error("Error fetching summary:", error);
     return {

@@ -5,18 +5,8 @@ import BgGradient from "@/components/common/bg-gradient";
 import DashboardHeader from "@/components/dashboard/dashboard-header";
 import { currentUser } from "@clerk/nextjs/server";
 import { getSummaries } from "@/lib/summaries";
+import { SummaryType } from "@/types/summary";
 
-export interface SummaryType {
-  id: string;
-  user_id?: string; // Optional, as it may not be needed in the frontend
-  original_file_url?: string; // Optional, as it may not be needed in the frontend
-  summary_text: string;
-  title: string;
-  file_name?: string;
-  status: string;
-  created_at: string;
-  updated_at?: string;
-}
 
 export default async function DashboardPage() {
   const user = await currentUser();
