@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import UploadFormInput from "@/components/upload/upload-form-input";
 import {
   generatePDFSummary,
@@ -13,7 +13,7 @@ import { formatFileNameAsTitle } from "@/utils/format-file";
 
 export default function UploadForm() {
   const [isLoading, setIsLoading] = useState(false); // State to manage loading status
-
+  const router = useRouter();
   const { startUpload } = useUploadThing("pdfRouter", {
     onClientUploadComplete: () => {
       console.log("File uploaded successfully");
@@ -117,9 +117,8 @@ export default function UploadForm() {
             storedResult?.title || formattedFileName
           }"`
         );
-        console.log("Stored result:", storedResult);
-        console.log(storedResult?.data?.summaryId);
-        redirect(`/summaries/${storedResult?.data?.summaryId})`);
+
+        router.push(`/summaries/${storedResult?.data?.summaryId}`);
       }
     } catch (error: any) {
       // Catch any unexpected errors during the entire process

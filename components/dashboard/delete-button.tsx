@@ -74,10 +74,10 @@ export default function DeleteButton({ summaryId }: { summaryId: string }) {
             <Button
               variant="destructive"
               className="flex-1 bg-rose-600 hover:bg-rose-700 text-white"
-              onClick={handleDelete} // Replace with actual user ID and summary ID
-              disabled={loading} // Disable button while loading
+              onClick={handleDelete}
+              disabled={loading}
             >
-              {loading ? <Loader2 /> : "Delete Summary"}
+              {loading ? <Loader2 className="animate-spin" /> : "Delete Summary"}
             </Button>
           </DialogFooter>
         </DialogContent>

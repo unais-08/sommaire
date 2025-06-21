@@ -5,7 +5,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 export const generateSummaryFromGemini = async (
   pdfText: string
-): Promise<string> => {
+): Promise<any> => {
   // Ensure the API key is available
   if (!GEMINI_API_KEY) {
     throw new Error("Gemini API Key is not configured.");
@@ -31,8 +31,8 @@ export const generateSummaryFromGemini = async (
     if (!summaryText) {
       throw new Error("Gemini API response did not contain expected content.");
     }
-
-    return summaryText;
+    // console.log(summaryText, "...............");
+    return { summaryText: summaryText };
   } catch (error: any) {
     // The client library might wrap rate limit errors differently,
     // but we can still check for specific messages or error structures if they exist.
