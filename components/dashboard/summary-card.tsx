@@ -11,10 +11,13 @@ import {
 } from "@/components/ui/card";
 
 import DeleteButton from "@/components/dashboard/delete-button";
-import { SummaryType } from "@/types/summary";
 import { StatusBadge } from "@/components/dashboard/status-bagde-helper";
+import { SummaryType } from "@/types/summary"; // Assuming SummaryType correctly defines summary_text as string
 
 export default function SummaryCard(summary: SummaryType) {
+  // Generate the clean preview text for the dashboard card
+  const previewText = summary.summary_text;
+
   return (
     <Card
       key={summary.id}
@@ -25,7 +28,8 @@ export default function SummaryCard(summary: SummaryType) {
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-semibold text-gray-800">
             <FileText className="h-5 w-5 mr-2 text-gray-500" />
-            {summary.title.length > 35
+            {/* Displaying a clean title, potentially extracting from summary.summary_text if summary.title is not clean */}
+            {summary.title && summary.title.length > 35
               ? summary.title.slice(0, 30) + "..."
               : summary.title || "Untitled Summary"}
           </CardTitle>
@@ -36,10 +40,11 @@ export default function SummaryCard(summary: SummaryType) {
           </CardDescription>
         </CardHeader>
 
-        {/* Card Content */}
+        {/* Card Content - NOW USING THE CLEANED PREVIEW TEXT */}
         <CardContent className="flex-grow pt-1 pb-2">
           <p className="text-sm text-gray-700 line-clamp-3">
-            {summary.summary_text}
+            {previewText || "No preview available."}{" "}
+            {/* Use the cleaned previewText */}
           </p>
         </CardContent>
       </Link>

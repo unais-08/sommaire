@@ -6,28 +6,6 @@ import { SummaryDetailPageProps } from "@/types/summary";
 import { convertSummaryTextToPoints } from "@/utils/summary-text-to-point";
 
 export default function SummaryDetailPage({ summary }: SummaryDetailPageProps) {
-  // Mock data for demonstration - This will be replaced by actual summary data
-  const summaryData = {
-    title: "Next.js Hot Tips Cheatsheet",
-    sourceLink: "https://example.com/nextjs-hot-tips-cheatsheet.pdf",
-
-    cardContent: {
-      title: "Level Up Your Next.js Skills!",
-      points: [
-        "Master Next.js and build amazing web apps with this comprehensive course.",
-        "Perfect for developers of all levels.",
-        "Learn the latest features and best practices in Next.js.",
-        "Includes hands-on projects and real-world examples.",
-        "Join a community of Next.js enthusiasts and get support.",
-        "Start your Next.js journey today!",
-        "Unlock the full potential of Next.js with our expert guidance.",
-        "Stay updated with the latest trends and updates in the Next.js ecosystem.",
-        "Transform your web development skills with Next.js.",
-        "Get ready to impress with your Next.js knowledge and skills.",
-      ],
-    },
-  };
-
   const { file_name, title, summary_text, original_file_url, created_at } =
     summary;
   const pointsToDisplay = convertSummaryTextToPoints(summary_text || "");
@@ -48,10 +26,7 @@ export default function SummaryDetailPage({ summary }: SummaryDetailPageProps) {
           wordsCount={wordsCount} // Keep this mock for now if not available in `summary`
           summary_text={summary_text}
         />
-        <SummaryContentCard
-          title={summaryData.cardContent.title}
-          points={pointsToDisplay}
-        />
+        <SummaryContentCard title={title} points={pointsToDisplay} />
       </div>
     </div>
   );

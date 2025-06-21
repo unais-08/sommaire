@@ -3,30 +3,41 @@ export const convertSummaryTextToPoints = (text: string): string[] => {
     return [];
   }
 
-  // This regex splits the text by:
-  // 1. A punctuation mark (. ! ?) followed by zero or more whitespace characters (`\s*`).
-  //    The positive lookbehind `(?<=[.?!])` ensures the punctuation is included with the preceding sentence.
-  // 2. OR by one or more newline characters (`\n+`).
-  // This handles both paragraph-style sentences and explicitly newlined list items.
-  const rawPoints = text.split(/(?<=[.?!])\s*|\n+/);
+  // Split the entire summary text into individual lines
+  const lines = text.split("\n");
 
-  const cleanedPoints = rawPoints
-    .map((point) => {
-      let trimmedPoint = point.trim();
+  const extractedPoints: string[] = [];
 
-      // Remove leading markdown list indicators (e.g., "- ", "* ", "1. ") if present.
-      // This is useful if Gemini generates markdown-style lists.
-      trimmedPoint = trimmedPoint.replace(/^(\*|-|\d+\.)\s*/, "");
+  // Regex to identify lines that are points.
+  // It looks for:
+  // - '^•': Starts with a bullet point character.
+  // - '\\s*': Followed by zero or more whitespace characters.
+  // - '(\\S+)': Captures one or more non-whitespace characters (this is where the emoji should be).
+  // - '\\s*': Followed by zero or more whitespace characters.
+  // - '(.*)$': Captures the rest of the line's content.
+  const pointRegex = /^•\s*(\S+)\s*(.*)$/;
 
-      // Remove trailing punctuation if it's the very last character and not part of an abbreviation.
-      // (e.g., "Sentence." becomes "Sentence").
-      // We check `length > 1` to avoid removing punctuation from standalone symbols if any.
-      if (trimmedPoint.length > 1 && /[.!?]$/.test(trimmedPoint)) {
-        trimmedPoint = trimmedPoint.slice(0, -1);
+  for (const line of lines) {
+    const trimmedLine = line.trim(); // Trim leading/trailing whitespace from the line
+
+    // Try to match the line against our point regex
+    const match = trimmedLine.match(pointRegex);
+
+    if (match) {
+      // match[2] contains the captured content after the bullet and emoji
+      let content = match[2].trim();
+
+      // The previous version of convertSummaryTextToPoints removed trailing punctuation.
+      // We maintain this behavior for consistency with how your SummaryContentCard might expect the points.
+      if (content.length > 1 && /[.!?]$/.test(content)) {
+        content = content.slice(0, -1); // Remove the trailing punctuation (e.g., period, exclamation mark)
       }
-      return trimmedPoint;
-    })
-    .filter((point) => point.length > 0); // Filter out any empty strings that might result from splitting
 
-  return cleanedPoints;
+      extractedPoints.push(content);
+    }
+    // Lines that do not match the pointRegex (e.g., markdown titles, paragraphs, or other non-point lines)
+    // will be ignored and not added to extractedPoints.
+  }
+
+  return extractedPoints;
 };
