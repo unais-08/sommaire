@@ -1,10 +1,3 @@
-import React from "react";
-
-/**
- * Footer Component
- * A minimalistic footer displaying copyright information.
- * Designed to be reusable across the application.
- */
 export default function Footer() {
   return (
     <footer className="bg-white py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-100">

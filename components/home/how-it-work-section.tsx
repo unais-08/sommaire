@@ -1,5 +1,5 @@
-import { BrainCircuit, FileOutput, FileText, MoveRight } from "lucide-react";
 import { ReactNode } from "react";
+import { BrainCircuit, FileOutput, FileText, MoveRight } from "lucide-react";
 
 type Step = {
   icon: ReactNode;

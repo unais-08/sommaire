@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import {
   Card,
   CardHeader,
@@ -8,29 +9,14 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { SummaryType } from "@/app/(logged-in)/dashboard/page";
-import { cn } from "@/lib/utils";
+
 import DeleteButton from "@/components/dashboard/delete-button";
-import { formatDistanceToNow } from "date-fns";
-const StatusBadge = ({ status }: { status: string }) => {
-  return (
-    <span
-      className={cn(
-        "px-3 py-1 text-xs font-medium rounded-full capitalize",
-        status === "completed"
-          ? "bg-green-100 text-green-800"
-          : "bg-yellow-100 text-yellow-800"
-      )}
-    >
-      {status}
-    </span>
-  );
-};
+import { SummaryType } from "@/types/summary";
+import { StatusBadge } from "@/components/dashboard/status-bagde-helper";
 
 export default function SummaryCard(summary: SummaryType) {
   return (
     <Card
-      // onClick={() => redirect(`/summaries/${summary.id}`)}
       key={summary.id}
       className="relative flex flex-col justify-between rounded-lg shadow-sm border border-gray-200 bg-white text-gray-900 min-h-[250px] cursor-pointer"
     >
