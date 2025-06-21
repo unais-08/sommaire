@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FileText } from "lucide-react";
 import {
   Card,
@@ -11,7 +12,6 @@ import { SummaryType } from "@/app/(logged-in)/dashboard/page";
 import { cn } from "@/lib/utils";
 import DeleteButton from "@/components/dashboard/delete-button";
 import { formatDistanceToNow } from "date-fns";
-
 const StatusBadge = ({ status }: { status: string }) => {
   return (
     <span
@@ -30,30 +30,33 @@ const StatusBadge = ({ status }: { status: string }) => {
 export default function SummaryCard(summary: SummaryType) {
   return (
     <Card
+      // onClick={() => redirect(`/summaries/${summary.id}`)}
       key={summary.id}
-      className="relative flex flex-col justify-between rounded-lg shadow-sm border border-gray-200 bg-white text-gray-900 min-h-[250px]"
+      className="relative flex flex-col justify-between rounded-lg shadow-sm border border-gray-200 bg-white text-gray-900 min-h-[250px] cursor-pointer"
     >
-      {/* Card Header */}
-      <CardHeader>
-        <CardTitle className="flex items-center text-xl font-semibold text-gray-800">
-          <FileText className="h-5 w-5 mr-2 text-gray-500" />
-          {summary.title.length > 35
-            ? summary.title.slice(0, 30) + "..."
-            : summary.title || "Untitled Summary"}
-        </CardTitle>
-        <CardDescription className="text-sm text-gray-500">
-          {formatDistanceToNow(new Date(summary.created_at), {
-            addSuffix: true,
-          })}
-        </CardDescription>
-      </CardHeader>
+      <Link href={`/summaries/${summary.id}`} className="no-underline">
+        {/* Card Header */}
+        <CardHeader>
+          <CardTitle className="flex items-center text-xl font-semibold text-gray-800">
+            <FileText className="h-5 w-5 mr-2 text-gray-500" />
+            {summary.title.length > 35
+              ? summary.title.slice(0, 30) + "..."
+              : summary.title || "Untitled Summary"}
+          </CardTitle>
+          <CardDescription className="text-sm text-gray-500">
+            {formatDistanceToNow(new Date(summary.created_at), {
+              addSuffix: true,
+            })}
+          </CardDescription>
+        </CardHeader>
 
-      {/* Card Content */}
-      <CardContent className="flex-grow pt-1 pb-2">
-        <p className="text-sm text-gray-700 line-clamp-3">
-          {summary.summary_text}
-        </p>
-      </CardContent>
+        {/* Card Content */}
+        <CardContent className="flex-grow pt-1 pb-2">
+          <p className="text-sm text-gray-700 line-clamp-3">
+            {summary.summary_text}
+          </p>
+        </CardContent>
+      </Link>
 
       {/* Card Footer */}
       <CardFooter className="flex items-center justify-between pt-2 border-t border-gray-100 mt-auto">
@@ -63,4 +66,3 @@ export default function SummaryCard(summary: SummaryType) {
     </Card>
   );
 }
-

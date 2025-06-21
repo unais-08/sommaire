@@ -5,6 +5,7 @@ import { generateSummaryFromGemini } from "@/lib/geminiai";
 import { fetchAndExtractText } from "@/lib/langchain";
 import { generateSummaryFromOpenAI } from "@/lib/openai";
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 /**
  * Generates a summary from a PDF file.
  * It first extracts text using Langchain, then attempts to summarize with Gemini.
@@ -70,11 +71,15 @@ export async function generatePDFSummary(uploadResponse: {
       };
     }
 
-    let summary: string | null = null; // Initialize summary variable to null.
+    let summary: any | null = null; // Initialize summary variable to null.
 
     // Step 2: Attempt to generate summary using Gemini (primary AI model).
     try {
-      summary = await generateSummaryFromGemini(pdfText);
+      const geminiResult = await generateSummaryFromGemini(pdfText);
+      if (!geminiResult?.summaryText) {
+        throw new Error("Gemini returned empty summary.");
+      }
+      summary = geminiResult.summaryText;
       console.log("Summary generated successfully using Gemini.");
     } catch (error: any) {
       // Check if the error from Gemini is a rate limit exceed issue.
@@ -144,7 +149,7 @@ export async function savePDFSummary({
   //this is a placeholder function, implement your database logic here
   try {
     const sql = await getDBConnection();
-const result = await sql`
+    const result = await sql`
   INSERT INTO pdf_summaries (
     user_id,
     original_file_url,
@@ -160,15 +165,15 @@ const result = await sql`
   )
   RETURNING id;
 `;
-const summaryId = result[0]?.id;
-return {
-  summaryId,
-  userId,
-  fileUrl,
-  summary,
-  title,
-  fileName,
-} as PdfSummaryType; // Return the saved summary object
+    const summaryId = result[0]?.id;
+    return {
+      summaryId,
+      userId,
+      fileUrl,
+      summary,
+      title,
+      fileName,
+    } as PdfSummaryType; // Return the saved summary object
   } catch (error) {
     console.error("Error saving PDF summary:", error);
     throw error;
@@ -208,6 +213,9 @@ export async function storePDFSummaryAction({
         data: null,
       };
     }
+
+    revalidatePath(`/summaries/${savedSummary.summaryId}`);
+
     // Optionally, you can return a success message here if needed
     return {
       success: true,

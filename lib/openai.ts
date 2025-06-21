@@ -20,7 +20,7 @@ export const generateSummaryFromOpenAI = async (pdfText: any) => {
       ],
       temperature: 0.7,
     });
-
+    
     return response.output_text;
   } catch (error: any) {
     if (error?.status === 429) {
