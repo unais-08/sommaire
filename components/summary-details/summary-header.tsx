@@ -1,7 +1,7 @@
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const SummaryHeader = () => {
+export const SummaryHeader = ({ created_at }: { created_at: string }) => {
   return (
     <div className="flex items-center justify-between text-sm text-gray-500 mb-6 flex-wrap gap-2">
       <div className="flex items-center space-x-4">
@@ -21,7 +21,7 @@ export const SummaryHeader = () => {
               d="M8 7V3m8 4V3m-9 8h.01M7 12h.01M11 12h.01M15 12h.01M17 12h.01M8 16h.01M12 16h.01M16 16h.01M9 19h6a2 2 0 002-2V7a2 2 0 00-2-2H9a2 2 0 00-2 2v10a2 2 0 002 2z"
             ></path>
           </svg>
-          January 25, 2025
+          {new Date(created_at).toLocaleString()}
         </span>
         <span className="flex items-center">
           <svg
