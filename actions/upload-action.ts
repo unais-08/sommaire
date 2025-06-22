@@ -24,15 +24,23 @@ interface PdfSummaryType {
   fileName: string;
 }
 
+interface GeneratePDFSummaryResponse {
+  success: boolean;
+  message: string;
+  data: string | null;
+}
+interface storePDFSummaryActionResponse {
+  success: boolean;
+  message: string;
+  data: PdfSummaryType | null;
+}
+
 export async function generatePDFSummary(uploadResponse: {
   serverData: {
-    userId: string;
-    file: {
-      url: string;
-      name: string;
-    };
+    url: string;
+    name: string;
   };
-}) {
+}): Promise<GeneratePDFSummaryResponse> {
   // Validate the initial upload response.
   if (!uploadResponse) {
     return {
@@ -43,14 +51,11 @@ export async function generatePDFSummary(uploadResponse: {
   }
 
   const {
-    serverData: {
-      userId,
-      file: { url: pdfUrl, name: fileName },
-    },
+    serverData: { url: pdfUrl, name: fileName },
   } = uploadResponse;
 
   // Validate essential extracted file details.
-  if (!userId || !pdfUrl || !fileName) {
+  if (!pdfUrl || !fileName) {
     return {
       success: false,
       message:
@@ -71,7 +76,7 @@ export async function generatePDFSummary(uploadResponse: {
       };
     }
 
-    let summary: any | null = null; // Initialize summary variable to null.
+    let summary: string | null = null; // Initialize summary variable to null.
 
     // Step 2: Attempt to generate summary using Gemini (primary AI model).
     try {
@@ -80,33 +85,33 @@ export async function generatePDFSummary(uploadResponse: {
         throw new Error("Gemini returned empty summary.");
       }
       summary = geminiResult.summaryText;
-      console.log("Summary generated successfully using Gemini.");
+      console.log("Summary generated successfully using Gemini.", summary);
     } catch (error: any) {
       // Check if the error from Gemini is a rate limit exceed issue.
-      if (error.message && error.message.includes("RATE_LIMIT_EXCEED")) {
-        console.warn(
-          "Gemini API rate limit exceeded. Attempting fallback to OpenAI."
-        );
-        // Step 3: Fallback to OpenAI if Gemini is rate-limited.
-        try {
-          summary = await generateSummaryFromOpenAI(pdfText);
-          console.log(
-            "Summary generated successfully using OpenAI (fallback)."
-          );
-        } catch (openaiError: any) {
-          // If OpenAI fallback also fails, log and re-throw the error to the outer catch.
-          console.error("OpenAI fallback failed:", openaiError);
-          throw new Error(
-            `OpenAI fallback failed: ${openaiError.message || "unknown error."}`
-          );
-        }
-      } else {
-        // For any other error from Gemini (not rate limit), log and re-throw to the outer catch.
-        console.error("Error from Gemini API:", error);
-        throw new Error(
-          `Gemini API call failed: ${error.message || "unknown error."}`
-        );
-      }
+      // if (error.message && error.message.includes("RATE_LIMIT_EXCEED")) {
+      //   console.warn(
+      //     "Gemini API rate limit exceeded. Attempting fallback to OpenAI."
+      //   );
+      // Step 3: Fallback to OpenAI if Gemini is rate-limited.
+      // try {
+      //   summary = await generateSummaryFromOpenAI(pdfText);
+      //   console.log(
+      //     "Summary generated successfully using OpenAI (fallback)."
+      //   );
+      // } catch (openaiError: any) {
+      //   // If OpenAI fallback also fails, log and re-throw the error to the outer catch.
+      //   console.error("OpenAI fallback failed:", openaiError);
+      //   throw new Error(
+      //     `OpenAI fallback failed: ${openaiError.message || "unknown error."}`
+      //   );
+      // }
+      // } if {
+      // For any other error from Gemini (not rate limit), log and re-throw to the outer catch.
+      console.error("Error from Gemini API:", error);
+      throw new Error(
+        `Gemini API call failed: ${error.message || "unknown error."}`
+      );
+      // }1
     }
 
     // Step 4: Final check if a summary was successfully generated from either model.
@@ -138,6 +143,7 @@ export async function generatePDFSummary(uploadResponse: {
   }
 }
 
+//This is helper functin for storePDFSummaryAction
 export async function savePDFSummary({
   userId,
   fileUrl,
@@ -185,7 +191,7 @@ export async function storePDFSummaryAction({
   summary,
   title,
   fileName,
-}: PdfSummaryType) {
+}: PdfSummaryType): Promise<storePDFSummaryActionResponse> {
   //user is must logged in to store a PDF summary
   //save the pdf
   let savedSummary: PdfSummaryType | null = null;

@@ -10,6 +10,7 @@ import {
 import { schema } from "@/utils/fileSchema";
 import { useUploadThing } from "@/utils/uploadthing";
 import { formatFileNameAsTitle } from "@/utils/format-file";
+import { url } from "inspector";
 
 export default function UploadForm() {
   const [isLoading, setIsLoading] = useState(false); // State to manage loading status
@@ -56,8 +57,9 @@ export default function UploadForm() {
       }
 
       // Start the actual file upload
+      console.log("Starting file upload:", [file]);
       const uploadResponse = await startUpload([file]);
-
+      console.log("Upload response:", uploadResponse);
       if (!uploadResponse || uploadResponse.length === 0) {
         console.error(
           "Upload failed or no response received from UploadThing."
@@ -70,10 +72,13 @@ export default function UploadForm() {
       toast.info("✨ PDF uploaded! Now generating summary...");
 
       // Generate the PDF summary
-      const summaryResult = await generatePDFSummary({
-        serverData: uploadResponse[0].serverData,
-      });
-
+      //pasrsing problem occur here my finding
+      const serverData = {
+        url: uploadResponse[0].ufsUrl,
+        name: uploadResponse[0].name,
+      };
+      const summaryResult = await generatePDFSummary({ serverData });
+      console.log(summaryResult);
       // Based on the summary generation result, show success or failure toast
       if (summaryResult.success) {
         toast.success("📝 PDF summary generated successfully!");
@@ -85,15 +90,16 @@ export default function UploadForm() {
       }
 
       const formattedFileName = formatFileNameAsTitle(
-        uploadResponse[0].serverData.file.name
+        uploadResponse[0].name
       );
       if (summaryResult.data) {
         let storedResult: any;
+        //pasrsing problem occur here my finding
         storedResult = await storePDFSummaryAction({
           summary: summaryResult.data,
           title: formattedFileName,
-          fileName: uploadResponse[0].serverData.file.name,
-          fileUrl: uploadResponse[0].serverData.file.url,
+          fileName: uploadResponse[0].name,
+          fileUrl: uploadResponse[0].ufsUrl,
         });
 
         //save the summary to the database
