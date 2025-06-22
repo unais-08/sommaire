@@ -21,16 +21,6 @@ export default function UploadForm() {
     onUploadError: (error) => {
       console.error("Upload failed:", error);
       let errorMessage = "An unexpected error occurred during upload.";
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      if (error.data && typeof error.data === "object" && error.data !== null) {
-        if ("cause" in error.data) {
-          errorMessage = `Upload failed: ${error.data.cause}`;
-        } else if ("uploadthingError" in error.data) {
-          errorMessage = `Upload failed: ${error.data.uploadthingError}`;
-        }
-      }
       // This toast specifically for upload errors
       toast.error(`❌ ${errorMessage}`);
       setIsLoading(false); // Ensure loading state is reset on upload error

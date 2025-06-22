@@ -15,6 +15,8 @@ export async function getSummaries(userId: string): Promise<SummaryType[]> {
       title: row.title,
       status: row.status,
       created_at: row.created_at,
+      file_name: row.file_name,
+      original_file_url: row.original_file_url,
     }));
   } catch (error) {
     console.error("Error fetching summaries:", error);
