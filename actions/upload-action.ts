@@ -6,14 +6,6 @@ import { fetchAndExtractText } from "@/lib/langchain";
 import { generateSummaryFromOpenAI } from "@/lib/openai";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-/**
- * Generates a summary from a PDF file.
- * It first extracts text using Langchain, then attempts to summarize with Gemini.
- * If Gemini hits a rate limit, it falls back to OpenAI for summarization.
- *
- * @param uploadResponse - An object containing server data about the uploaded file.
- * @returns An object indicating success or failure, with a message and the summary data.
- */
 
 interface PdfSummaryType {
   summaryId?: string; // Optional ID for the summary, if needed
@@ -29,7 +21,7 @@ interface GeneratePDFSummaryResponse {
   message: string;
   data: string | null;
 }
-interface storePDFSummaryActionResponse {
+export interface storePDFSummaryActionResponse {
   success: boolean;
   message: string;
   data: PdfSummaryType | null;
