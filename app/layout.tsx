@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { Source_Sans_3 as FontSans } from "next/font/google";
 import "./globals.css";
 
-import Header from "@/components/common/header";
 import Footer from "@/components/common/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
+import Header from "@/components/common/new-header";
 
 const fontSans = FontSans({
   variable: "--font-sans",
