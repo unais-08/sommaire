@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -7,10 +8,12 @@ export default function NavLink({
   href,
   children,
   className,
+  onClick,
 }: {
   href: string;
   children: React.ReactNode;
   className?: string;
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }) {
   const pathname = usePathname();
   const isActive =
