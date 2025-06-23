@@ -125,6 +125,17 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+  /* Apply the variable based on your theme class (e.g., if you use 'dark' class on body/html) */
+}
+[data-sonner-toaster][data-sonner-theme="dark"] [data-description] {
+  color: #333333 !important; /* Set to your desired dark grey */
+  /* Using !important to ensure it overrides Sonner's default. */
+  /* You might be able to remove !important if your CSS loads after Sonner's */
+  /* but it's a good safety net for overriding specific library styles. */
+} /* Optional: If you also want to make it dark in light mode,
+   you would add a similar rule for 'light' theme: */
+[data-sonner-toaster][data-sonner-theme="light"] [data-description] {
+  color: #333333; /* Dark grey for light backgrounds too */
 }
 
 @layer base {

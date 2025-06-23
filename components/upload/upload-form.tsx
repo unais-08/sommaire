@@ -6,119 +6,127 @@ import UploadFormInput from "@/components/upload/upload-form-input";
 import {
   generatePDFSummary,
   storePDFSummaryAction,
+  storePDFSummaryActionResponse,
 } from "@/actions/upload-action";
-import { schema } from "@/utils/fileSchema";
-import { useUploadThing } from "@/utils/uploadthing";
 import { formatFileNameAsTitle } from "@/utils/format-file";
-import { url } from "inspector";
+import { validateFile } from "@/utils/validation";
+import { useFileUploadService } from "@/utils/uploadSerive";
 
 export default function UploadForm() {
-  const [isLoading, setIsLoading] = useState(false); // State to manage loading status
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { startUpload } = useUploadThing("pdfRouter", {
-    onClientUploadComplete: () => {
-      toast.success("✅ File uploaded successfully!");
-    },
-    onUploadError: (error) => {
-      console.error("Upload failed:", error);
-      let errorMessage = "An unexpected error occurred during upload.";
-      // This toast specifically for upload errors
-      toast.error(`❌ ${errorMessage}`);
-      setIsLoading(false); // Ensure loading state is reset on upload error
-    },
-    onUploadBegin: (fileName: string) => {
-      // This toast shows progress during the actual file transfer
-      toast.info(`📤 Uploading Your PDF...`);
-    },
-  });
+  const { uploadFile } = useFileUploadService();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     toast.dismiss(); // Clear any previous toasts
     setIsLoading(true); // Set loading state to true
 
+    // Show a loading toast to indicate the process has started
+    const progressToastId = toast.loading("Starting PDF Process...", {
+      description: "We're getting ready to handle your file.",
+      duration: Infinity, // Keep indefinitely until explicitly dismissed or updated
+    });
     try {
-      toast.info("⏳ Processing your request. Please wait...");
-
       const formData = new FormData(e.currentTarget);
       const file = formData.get("file") as File;
 
-      const validatedFile = schema.safeParse({ file });
+      // 1. File Validation
+      const validationResult = validateFile(file);
 
-      if (!validatedFile.success) {
-        const fileError = validatedFile.error.flatten().fieldErrors.file?.[0];
-        console.error("File validation failed:", fileError);
-        toast.error(
-          `⚠️ File validation failed: ${
-            fileError || "Please select a valid PDF file."
-          }`
-        );
+      if (!validationResult.success) {
+        console.error("File validation failed:", validationResult.error);
+        toast.error("Validation Failed!", {
+          id: progressToastId, // Update to an error state
+          description: `Oops! ${validationResult.error} Please select a valid PDF file.`,
+          duration: 5000,
+        });
+        setIsLoading(false);
         return; // Exit if validation fails
       }
+      const validatedFile = validationResult.file;
 
-      // Start the actual file upload
-      console.log("Starting file upload:", [file]);
-      const uploadResponse = await startUpload([file]);
-      console.log("Upload response:", uploadResponse);
-      if (!uploadResponse || uploadResponse.length === 0) {
-        console.error(
-          "Upload failed or no response received from UploadThing."
-        );
-        toast.error("❌ File upload failed. Please try again.");
+      // 2. File Upload
+      toast.loading("✅ Uploading PDF...", {
+        id: progressToastId, // Update the existing toast
+        description: `Sending your PDF to our servers.`,
+      });
+
+      const uploadResponse = await uploadFile(validatedFile);
+      if (!uploadResponse.success) {
+        console.error("File upload failed:", uploadResponse.error);
+        toast.error("Upload Failed!", {
+          id: progressToastId, // Update to an error state
+          description: `We couldn't upload "${validatedFile.name}": ${uploadResponse.error}. Please try again.`,
+          duration: 7000,
+        });
+        setIsLoading(false);
         return; // Exit if upload fails
       }
 
-      // After successful upload, update the toast message for summary generation
-      toast.info("✨ PDF uploaded! Now generating summary...");
-
-      // Generate the PDF summary
-      //pasrsing problem occur here my finding
+      const uploadedFileDetails = uploadResponse.data[0];
+      const formattedFileName = formatFileNameAsTitle(uploadedFileDetails.name);
       const serverData = {
-        url: uploadResponse[0].ufsUrl,
-        name: uploadResponse[0].name,
+        url: uploadedFileDetails.ufsUrl,
+        name: uploadedFileDetails.name,
       };
+
+      // 3.1 After successful upload, update the toast message for summary generation
+      toast.loading("✨ Generating Summary...", {
+        id: progressToastId, // Update the existing toast
+        description: `Your PDF has been uploaded! Now, we're extracting key information from PDF. This might take a moment.`,
+      });
+
+      // 3.2 Generate PDF Summary
       const summaryResult = await generatePDFSummary({ serverData });
-      console.log(summaryResult);
-      // Based on the summary generation result, show success or failure toast
-      if (summaryResult.success) {
-        toast.success("📝 PDF summary generated successfully!");
-        // Here you might redirect or display the summary
-      } else {
-        console.error("Summary generation failed:", summaryResult.message);
-        toast.error(`🚨 Summary generation failed: ${summaryResult.message}`);
+      // console.log(summaryResult);
+
+      // 3.3 Check if summary generation was successful
+      if (!summaryResult.success) {
+        toast.error("Summary Generation Failed!", {
+          id: progressToastId, // Update to an error state
+          description: `We couldn't create a summary for your PDF: ${summaryResult.message}.`,
+          duration: 7000,
+        });
         return; // Exit if summary generation fails
       }
 
-      const formattedFileName = formatFileNameAsTitle(
-        uploadResponse[0].name
-      );
-      if (summaryResult.data) {
-        let storedResult: any;
-        //pasrsing problem occur here my finding
+      toast.loading("📝 Saving Summary...", {
+        id: progressToastId, // Update the existing toast
+        description: `Almost done! Storing the generated summary for your PDF.`,
+      });
+
+      // 4. Store PDF Summary
+      if (summaryResult.data && summaryResult.success) {
+        let storedResult: storePDFSummaryActionResponse;
         storedResult = await storePDFSummaryAction({
-          summary: summaryResult.data,
+          summary: summaryResult.data ?? "",
           title: formattedFileName,
-          fileName: uploadResponse[0].name,
-          fileUrl: uploadResponse[0].ufsUrl,
+          fileName: uploadedFileDetails.name,
+          fileUrl: uploadedFileDetails.ufsUrl,
         });
 
-        //save the summary to the database
-        toast.success(
-          `✅ Summary saved successfully! Title: "${
-            storedResult?.title || formattedFileName
-          }"`
-        );
+        // Final Success Toast
+        toast.success("✅ Process Complete!", {
+          id: progressToastId, // Update to a final success state
+          description: `Your summary for ${formattedFileName} has been successfully created and saved!`,
+          duration: 5000, // Keep success message for a few seconds
+        });
 
+        // 5. Redirect to the summary page
         router.push(`/summaries/${storedResult?.data?.summaryId}`);
       }
     } catch (error: any) {
       // Catch any unexpected errors during the entire process
       console.error("An unexpected error occurred during handleSubmit:", error);
-      toast.error(
-        `💥 An unexpected error occurred: ${
+      toast.error("An Unexpected Error Occurred!", {
+        id: progressToastId, // Ensure even unexpected errors update the last toast
+        description: `Something went wrong: ${
           error.message || "Please try again."
-        }`
-      );
+        }`,
+        duration: 10000, // Longer duration for unexpected errors
+      });
     } finally {
       setIsLoading(false); // Always reset loading state
     }

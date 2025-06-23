@@ -32,7 +32,11 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
-          <Toaster position="top-right" />
+          <Toaster
+            position="top-right"
+            theme="system"
+            className="toaster-class"
+          />
         </body>
       </html>
     </ClerkProvider>
