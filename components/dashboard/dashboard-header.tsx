@@ -6,7 +6,7 @@ function DashboardHeader() {
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+        <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-rose-500 to-rose-700 bg-clip-text text-transparent">
           Your Summaries
         </h1>
         <p className="text-gray-600 text-sm mt-1">
