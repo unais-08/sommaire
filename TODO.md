@@ -53,16 +53,16 @@
 
 #### 🧠 Database POSTGRESQL
 
-- [ ] Setup DB
-- [ ] Make Schema
-- [ ] Setup ORM
+- [x] Setup DB
+- [x] Make Schema
+- [x] Setup ORM
 
 ---
 
 ##### Backend & DB
 
-- [ ] Set up PostgreSQL with Prisma
-- [ ] Define user & document schema
+- [x] Set up PostgreSQL with Prisma
+- [x] Define user & document schema
 
 #### 🛒 Payments
 
@@ -77,7 +77,7 @@
 
 - [x] Add environment variables
 - [x] Check `.env` and `.gitignore` setup
-- [ ] Deploy on Vercel
+- [x] Deploy on Vercel
 
 ---
 

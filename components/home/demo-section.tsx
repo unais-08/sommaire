@@ -1,5 +1,7 @@
 import React from "react";
 import { Pizza } from "lucide-react"; // Assuming Pizza is an icon from lucide-react
+import { SummaryContentCard } from "@/components/summary-details/summary-reel"; // Renamed for clarity
+import { HOW_TO_USE_SOMMAIRE } from "@/utils/how-to-use-sommaire";
 
 export default function DemoSection() {
   return (
@@ -29,13 +31,13 @@ export default function DemoSection() {
           <h3 className="text-xl lg:text-3xl font-bold text-gray-900 max-w-2xl mx-auto px-4 sm:px-6">
             Watch how Sommaire transforms this{" "}
             <span className="bg-linear-to-r from-rose-500 to-rose-700 bg-clip-text text-transparent">
-              Next.js course PDF
+              Intro to Sommaire PDF
             </span>{" "}
             into an easy-to-read summary!
           </h3>
         </div>
-        <div className="flex justify-center items-center px-2 sm:px-4 lg:px-6">
-          {/* {summary viewer} */}
+        <div className="flex justify-center items-center px-2 sm:px-4 lg:px-6 mt-8">
+          <SummaryContentCard points={HOW_TO_USE_SOMMAIRE} />
         </div>
       </div>
     </section>
