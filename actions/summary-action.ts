@@ -1,11 +1,11 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { getDBConnection } from "@/lib/db";
 
 export async function deleteSummary(summaryId: string) {
   const sql = await getDBConnection();
-  const user = await currentUser();
+  const user = await getCurrentUser();
   if (!user) {
     throw new Error("User not authenticated.");
   }

@@ -15,8 +15,33 @@ import { StatusBadge } from "@/components/dashboard/status-bagde-helper";
 import { SummaryType } from "@/types/summary"; // Assuming SummaryType correctly defines summary_text as string
 
 export default function SummaryCard(summary: SummaryType) {
-  // Generate the clean preview text for the dashboard card
-  const previewText = summary.summary_text;
+  // Strip markdown syntax for a clean preview on dashboard cards
+  const cleanPreview = summary.summary_text
+    ? summary.summary_text
+        .replace(/^#{1,6}\s+/gm, "") // Remove headings (# ## ### etc.)
+        .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold **text**
+        .replace(/\*(.*?)\*/g, "$1") // Remove italic *text*
+        .replace(/~~(.*?)~~/g, "$1") // Remove strikethrough
+        .replace(/`{1,3}[^`]*`{1,3}/g, "") // Remove inline/block code
+        .replace(/^[-*•]\s+/gm, "") // Remove bullet points
+        .replace(/^\d+\.\s+/gm, "") // Remove numbered lists
+        .replace(/^>\s+/gm, "") // Remove blockquotes
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // Remove links, keep text
+        .replace(/---+/g, "") // Remove horizontal rules
+        .replace(/\n{2,}/g, " ") // Collapse multiple newlines
+        .replace(/\n/g, " ") // Replace newlines with space
+        .replace(/\s{2,}/g, " ") // Collapse multiple spaces
+        .trim()
+    : "";
+
+  // Also clean title from markdown
+  const cleanTitle = summary.title
+    ? summary.title
+        .replace(/^#{1,6}\s+/gm, "")
+        .replace(/\*\*(.*?)\*\*/g, "$1")
+        .replace(/[*_~`]/g, "")
+        .trim()
+    : "Untitled Summary";
 
   return (
     <Card
@@ -28,10 +53,9 @@ export default function SummaryCard(summary: SummaryType) {
         <CardHeader>
           <CardTitle className="flex items-center text-xl font-semibold text-gray-800">
             <FileText className="h-5 w-5 mr-2 text-gray-500" />
-            {/* Displaying a clean title, potentially extracting from summary.summary_text if summary.title is not clean */}
-            {summary.title && summary.title.length > 35
-              ? summary.title.slice(0, 30) + "..."
-              : summary.title || "Untitled Summary"}
+            {cleanTitle.length > 35
+              ? cleanTitle.slice(0, 30) + "..."
+              : cleanTitle}
           </CardTitle>
           <CardDescription className="text-sm text-gray-500">
             {formatDistanceToNow(new Date(summary.created_at), {
@@ -43,8 +67,7 @@ export default function SummaryCard(summary: SummaryType) {
         {/* Card Content - NOW USING THE CLEANED PREVIEW TEXT */}
         <CardContent className="flex-grow pt-1 pb-2">
           <p className="text-sm text-gray-700 line-clamp-3">
-            {previewText || "No preview available."}{" "}
-            {/* Use the cleaned previewText */}
+            {cleanPreview || "No preview available."}
           </p>
         </CardContent>
       </Link>

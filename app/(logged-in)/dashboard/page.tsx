@@ -3,13 +3,12 @@ import EmptySummary from "@/components/dashboard/empty-summary";
 import SummaryCard from "@/components/dashboard/summary-card";
 import BgGradient from "@/components/common/bg-gradient";
 import DashboardHeader from "@/components/dashboard/dashboard-header";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { getSummaries } from "@/lib/summaries";
 import { SummaryType } from "@/types/summary";
 
-
 export default async function DashboardPage() {
-  const user = await currentUser();
+  const user = await getCurrentUser();
 
   if (!user?.id) {
     return redirect("/sign-in");

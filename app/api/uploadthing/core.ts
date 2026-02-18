@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 
@@ -12,10 +12,9 @@ export const ourFileRouter = {
     .middleware(async ({ req }) => {
       let user = null;
       try {
-        user = await currentUser();
+        user = await getCurrentUser();
       } catch (error) {
-        console.error("Error fetching current user from Clerk:", error);
-        // You might want to throw a specific error here or handle it
+        console.error("Error fetching current user:", error);
         throw new UploadThingError("Authentication service error");
       }
 

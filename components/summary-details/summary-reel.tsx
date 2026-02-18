@@ -1,134 +1,125 @@
 "use client";
 import { useState } from "react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 
-// Define how many points per slide/page you want to display
-const POINTS_PER_PAGE = 1; // We want to display one "point" (title + its content) per slide
-
-// Component for the main content card with carousel/pagination
 export const SummaryContentCard = ({
   points,
 }: {
-  points: { title: string; content: string[] }[]; // Updated type to reflect content is an array of strings
+  points: { title: string; content: string[] }[];
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
-
-  const totalPages = points.length; // Each item in the 'points' array is a separate page
+  const totalPages = points.length;
   const currentPoint = points[currentPage];
 
-  const goToNextPage = () => {
-    setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPages - 1));
-  };
-
-  const goToPrevPage = () => {
-    setCurrentPage((prevPage) => Math.max(prevPage - 1, 0));
-  };
-
-  // Calculate progress value for the Progress bar (0-100)
-  const progressValue =
-    totalPages > 1 ? (currentPage / (totalPages - 1)) * 100 : 100;
+  const goToNextPage = () =>
+    setCurrentPage((p) => Math.min(p + 1, totalPages - 1));
+  const goToPrevPage = () => setCurrentPage((p) => Math.max(p - 1, 0));
 
   return (
-    <Card className="relative p-8 sm:p-10 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col items-center max-w-xl mx-auto">
-      <div className="flex flex-col items-center w-full">
-        {/* Progress Bar at the upper side of the card */}
-        <div className="w-full mb-6">
-          {/* Increased mb for more space */}
-          <Progress
-            value={progressValue}
-            className="w-full h-2.5 bg-gray-200 rounded-full" // Slightly thicker progress bar
+    <div className="space-y-6">
+      {/* Progress indicator */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-rose-400 to-rose-600 rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${totalPages > 1 ? ((currentPage + 1) / totalPages) * 100 : 100}%`,
+            }}
           />
         </div>
+        <span className="text-xs font-medium text-gray-400 tabular-nums whitespace-nowrap">
+          {currentPage + 1} / {totalPages}
+        </span>
+      </div>
 
-        {/* Card Title Section */}
-        <CardTitle className="text-2xl sm:text-4xl font-bold text-gray-900 mb-7 leading-tight text-center">
-          {currentPoint
-            ? currentPoint.title.startsWith("#")
+      {/* Content card */}
+      <div className="relative bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        {/* Decorative top accent */}
+        <div className="h-1 bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600" />
+
+        <div className="p-6 sm:p-8 lg:p-10">
+          {/* Section title */}
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-6 leading-snug">
+            {currentPoint
               ? currentPoint.title.replace(/^#+\s*/, "")
-              : currentPoint.title
-            : "Summary"}
-        </CardTitle>
+              : "Summary"}
+          </h2>
 
-        <CardContent className="w-full px-4 sm:px-6 text-left min-h-[160px] md:min-h-[200px] lg:min-h-[220px]">
-          {/* Increased min-height for more content */}
-          {/* Display bulleted content */}
-          {currentPoint && currentPoint.content && (
-            <ul className="list-none pl-0 space-y-3 text-lg text-gray-700 leading-relaxed">
-              {/* Adjusted pl to 0, increased space-y, larger text, relaxed line height */}
-              {currentPoint.content.map((item, index) => {
-                // First, remove the leading "• " if it exists
-                let formattedItem = item.startsWith("• ")
-                  ? item.substring(2)
-                  : item;
-                // Then, replace all " • " with "<br />"
-                formattedItem = formattedItem.replace(/ • /g, "<br />");
+          {/* Content */}
+          <div className="min-h-[180px] sm:min-h-[220px]">
+            {currentPoint?.content && currentPoint.content.length > 0 ? (
+              <ul className="space-y-4">
+                {currentPoint.content.map((item, index) => {
+                  let formattedItem = item.startsWith("• ")
+                    ? item.substring(2)
+                    : item;
+                  formattedItem = formattedItem.replace(
+                    / • /g,
+                    '<br /><span style="display:block;height:0.5em;"></span>',
+                  );
 
-                return (
-                  <li
-                    className="list-none"
-                    key={index}
-                    dangerouslySetInnerHTML={{
-                      __html: formattedItem.replace(
-                        /<br \/>/g,
-                        "<br /><span style='display:block; height:0.8em;'></span>"
-                      ),
-                    }}
-                  ></li>
-                );
-              })}
-            </ul>
-          )}
-        </CardContent>
+                  return (
+                    <li key={index} className="flex gap-3">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-rose-400 shrink-0" />
+                      <span
+                        className="text-gray-600 leading-relaxed text-[15px]"
+                        dangerouslySetInnerHTML={{ __html: formattedItem }}
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-gray-400 text-sm italic">
+                No content for this section.
+              </p>
+            )}
+          </div>
+        </div>
 
-        <CardFooter className="flex flex-col w-full pt-8">
-          {" "}
-          {/* Increased pt for more space */}
-          {/* Pagination dots */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center mt-5 mb-5 space-x-2.5">
-              {" "}
-              {/* Increased mt/mb and space-x */}
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <span
+        {/* Navigation footer */}
+        {totalPages > 1 && (
+          <div className="border-t border-gray-50 px-6 sm:px-8 py-4 flex items-center justify-between bg-gray-50/50">
+            {/* Dots */}
+            <div className="flex items-center gap-1.5">
+              {points.map((_, index) => (
+                <button
                   key={index}
-                  className={`w-3 h-3 rounded-full transition-colors duration-300 ease-in-out ${
-                    // Slightly larger dots, smoother transition
+                  onClick={() => setCurrentPage(index)}
+                  className={`rounded-full transition-all duration-300 ${
                     index === currentPage
-                      ? "bg-rose-600 shadow-md" // Darker rose for active, subtle shadow
-                      : "bg-gray-300 hover:bg-gray-400"
+                      ? "w-6 h-2 bg-rose-500"
+                      : "w-2 h-2 bg-gray-300 hover:bg-gray-400"
                   }`}
-                ></span>
+                />
               ))}
             </div>
-          )}
-          {/* Navigation Buttons */}
-          <div className="flex justify-between w-full max-w-md mx-auto mt-6">
-            {" "}
-            {/* Increased max-w and mt */}
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToPrevPage}
-              disabled={currentPage === 0}
-              className="rounded-full h-14 w-14 border-2 border-rose-400 text-rose-600 hover:bg-rose-100 hover:border-rose-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-in-out shadow-sm hover:shadow-md" // Larger, more prominent buttons, improved hover, subtle shadow
-            >
-              <ChevronLeft className="h-7 w-7" /> {/* Larger icon */}
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={goToNextPage}
-              disabled={currentPage === totalPages - 1 || totalPages <= 1}
-              className="rounded-full h-14 w-14 border-2 border-rose-400 text-rose-600 hover:bg-rose-100 hover:border-rose-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 ease-in-out shadow-sm hover:shadow-md" // Same for next button
-            >
-              <ChevronLeft className="h-7 w-7 rotate-180" /> {/* Larger icon */}
-            </Button>
+
+            {/* Prev / Next buttons */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToPrevPage}
+                disabled={currentPage === 0}
+                className="h-9 w-9 rounded-full border-gray-200 text-gray-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 disabled:opacity-30 transition-all"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages - 1}
+                className="h-9 w-9 rounded-full border-gray-200 text-gray-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 disabled:opacity-30 transition-all"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </CardFooter>
+        )}
       </div>
-    </Card>
+    </div>
   );
 };

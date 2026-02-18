@@ -1,10 +1,10 @@
 "use server";
 
 import { getDBConnection } from "@/lib/db";
+import { generateSummaryFromGroq } from "@/lib/groqai";
 import { generateSummaryFromGemini } from "@/lib/geminiai";
 import { fetchAndExtractText } from "@/lib/langchain";
-import { generateSummaryFromOpenAI } from "@/lib/openai";
-import { auth } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
 interface PdfSummaryType {
@@ -70,40 +70,32 @@ export async function generatePDFSummary(uploadResponse: {
 
     let summary: string | null = null; // Initialize summary variable to null.
 
-    // Step 2: Attempt to generate summary using Gemini (primary AI model).
+    // Step 2: Generate summary using Groq (primary, free tier).
     try {
-      const geminiResult = await generateSummaryFromGemini(pdfText);
-      if (!geminiResult?.summaryText) {
-        throw new Error("Gemini returned empty summary.");
+      const groqResult = await generateSummaryFromGroq(pdfText);
+      if (!groqResult?.summaryText) {
+        throw new Error("Groq returned empty summary.");
       }
-      summary = geminiResult.summaryText;
-      console.log("Summary generated successfully using Gemini.", summary);
+      summary = groqResult.summaryText;
+      console.log("Summary generated successfully using Groq.");
     } catch (error: any) {
-      // Check if the error from Gemini is a rate limit exceed issue.
-      // if (error.message && error.message.includes("RATE_LIMIT_EXCEED")) {
-      //   console.warn(
-      //     "Gemini API rate limit exceeded. Attempting fallback to OpenAI."
-      //   );
-      // Step 3: Fallback to OpenAI if Gemini is rate-limited.
-      // try {
-      //   summary = await generateSummaryFromOpenAI(pdfText);
-      //   console.log(
-      //     "Summary generated successfully using OpenAI (fallback)."
-      //   );
-      // } catch (openaiError: any) {
-      //   // If OpenAI fallback also fails, log and re-throw the error to the outer catch.
-      //   console.error("OpenAI fallback failed:", openaiError);
-      //   throw new Error(
-      //     `OpenAI fallback failed: ${openaiError.message || "unknown error."}`
-      //   );
-      // }
-      // } if {
-      // For any other error from Gemini (not rate limit), log and re-throw to the outer catch.
-      console.error("Error from Gemini API:", error);
-      throw new Error(
-        `Gemini API call failed: ${error.message || "unknown error."}`
-      );
-      // }1
+      console.warn("Groq failed:", error.message);
+
+      // Step 3: Fallback to Gemini if Groq fails (e.g. rate limit).
+      try {
+        console.log("Falling back to Gemini...");
+        const geminiResult = await generateSummaryFromGemini(pdfText);
+        if (!geminiResult?.summaryText) {
+          throw new Error("Gemini returned empty summary.");
+        }
+        summary = geminiResult.summaryText;
+        console.log("Summary generated successfully using Gemini (fallback).");
+      } catch (fallbackError: any) {
+        console.error("Gemini fallback also failed:", fallbackError.message);
+        throw new Error(
+          `All AI models failed. Groq: ${error.message} | Gemini: ${fallbackError.message}`,
+        );
+      }
     }
 
     // Step 4: Final check if a summary was successfully generated from either model.
@@ -188,7 +180,8 @@ export async function storePDFSummaryAction({
   //save the pdf
   let savedSummary: PdfSummaryType | null = null;
   try {
-    const { userId } = await auth();
+    const user = await getCurrentUser();
+    const userId = user?.id;
     if (!userId) {
       return {
         success: false,
